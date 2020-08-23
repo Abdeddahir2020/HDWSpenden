@@ -4,6 +4,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 public class HDWUtils {
 
@@ -29,5 +30,15 @@ public class HDWUtils {
 			System.out.println("Exception :" + e);
 			return null;
 		}
+	}
+	
+	public static String getMonat(Date date) {
+		SimpleDateFormat simpleformat = new SimpleDateFormat("MMMM", Locale.GERMAN);
+		return simpleformat.format(date);
+	}
+	
+	public static String getJahr(Date date) {
+		SimpleDateFormat simpleformat = new SimpleDateFormat("YYYY");
+		return simpleformat.format(date);
 	}
 }

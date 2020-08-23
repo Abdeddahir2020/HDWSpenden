@@ -3,13 +3,17 @@ package de.hdw.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import de.hdw.dao.KostenDAO;
-import de.hdw.dao.SpenderDAO;
 import de.hdw.dao.SammelLastSchriftDAO;
+import de.hdw.dao.SpenderDAO;
 import de.hdw.exception.RecordNotFoundException;
 import de.hdw.model.Spender;
 
@@ -24,6 +28,9 @@ public class SpenderService {
 	
 	@Autowired
 	KostenDAO kostenDAO;
+	
+	@Autowired
+    private EntityManager entityManager;
 
 	public List<Spender> getAllSpender() {
 		List<Spender> spenderList = spenderDAO.findAll();
@@ -45,22 +52,32 @@ public class SpenderService {
 		}
 	}
 
-	public Spender createOrUpdateSpender(Spender entity) throws RecordNotFoundException {
-		Optional<Spender> spender =  spenderDAO.findById(entity.getSpenderIban());
-
-		if (spender.isPresent()) {
-			Spender newEntity = spender.get();
-			newEntity.setName(entity.getName());
-
-			newEntity = spenderDAO.save(newEntity);
-
-			return newEntity;
-		} else {
-			entity = spenderDAO.save(entity);
-
-			return entity;
-		}
-	}
+//	public Spender createOrUpdateSpender(Spender entity) throws RecordNotFoundException {
+//		Optional<Spender> spender =  spenderDAO.findById(entity.getSpenderIban());
+//
+//		if (spender.isPresent()) {
+//			Spender newEntity = spender.get();
+//			newEntity.setName(entity.getName());
+//
+//			newEntity = spenderDAO.save(newEntity);
+//
+//			return newEntity;
+//		} else {
+//			entity = spenderDAO.save(entity);
+//
+//			return entity;
+//		}
+//	}
+	
+    public Spender findById(UUID iban) {
+        Query query = entityManager.createQuery("SELECT spd FROM Spender spd WHERE spd.spenderIban = iban");
+        return (Spender) query.getResultList();
+    }
+	
+	
+    public void createSpender(Spender entity) {
+	  spenderDAO.save(entity);
+    }
 
 	public void saveSpender(Spender entity) throws RecordNotFoundException {
 		Spender savedEntity = spenderDAO.save(entity);

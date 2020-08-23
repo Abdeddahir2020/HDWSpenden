@@ -5,6 +5,7 @@ import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.DiscriminatorType;
+import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -20,6 +21,7 @@ import javax.persistence.TemporalType;
 @Entity
 @Inheritance(strategy=InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name="type",discriminatorType=DiscriminatorType.STRING)
+@DiscriminatorValue(value="SPENDEN")
 public class Spenden{
 
 
@@ -42,7 +44,7 @@ public class Spenden{
 	@Column(name = "verwendungszweck", nullable = false, length = 200)
 	private String verwendungszweck;
 
-	@Column(name = "BIC", nullable = false, length = 80)
+	@Column(name = "bic", nullable = false, length = 80)
 	private String bic;
 
 	@Column(name = "betrag", nullable = false, length = 100)
@@ -51,13 +53,11 @@ public class Spenden{
 	@Column(name = "waehrung", nullable = false)
 	private String waehrung;
 
-	@Temporal(TemporalType.DATE)
 	@Column(name = "spendenMonat", nullable = false)
-	private Date spendenMonat;
+	private String spendenMonat;
 	
-	@Temporal(TemporalType.DATE)
 	@Column(name = "spendenJahr", nullable = false)
-	private Date spendenJahr;
+	private String spendenJahr;
 	
 	
 	public Spenden() {
@@ -128,19 +128,19 @@ public class Spenden{
 		this.spendenId = spendenId;
 	}
 
-	public Date getSpendenMonat() {
+	public String getSpendenMonat() {
 		return spendenMonat;
 	}
 
-	public void setSpendenMonat(Date spendenMonat) {
+	public void setSpendenMonat(String spendenMonat) {
 		this.spendenMonat = spendenMonat;
 	}
 
-	public Date getSpendenJahr() {
+	public String getSpendenJahr() {
 		return spendenJahr;
 	}
 
-	public void setSpendenJahr(Date spendenJahr) {
+	public void setSpendenJahr(String spendenJahr) {
 		this.spendenJahr = spendenJahr;
 	}
 

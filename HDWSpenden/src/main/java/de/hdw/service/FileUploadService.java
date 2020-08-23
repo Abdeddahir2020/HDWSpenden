@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,10 +32,10 @@ public class FileUploadService {
 
 	@Autowired
 	SpenderDAO spenderDAO;
-	
+
 	@Autowired
 	SammelLastSchriftDAO spenderSammelLastSchriftDAO;
-	
+
 	@Autowired
 	KostenDAO kostenDAO;
 
@@ -52,8 +53,10 @@ public class FileUploadService {
 			// read line by line
 
 			List<Spender> spdList = new ArrayList<>();
-			List<Kosten> kstList = new ArrayList<>();
-			List<SammelLastSchrift> sLTSList = new ArrayList<>();
+//			List<Kosten> kstList = new ArrayList<>();
+//			List<SammelLastSchrift> sLTSList = new ArrayList<>();
+			
+			List<Spenden> spendenList = new ArrayList<>();
 
 			// Read all rows at once
 			List<String[]> allRows = reader.readAll();
@@ -63,83 +66,93 @@ public class FileUploadService {
 				
 				if(row[3] != null && row[3].contains("SAMMEL-LS-EINZUG"))
 				{
-					SammelLastSchrift sLTS = new SammelLastSchrift();
+					Spenden spenden = new SammelLastSchrift();
 					
-					sLTS.setBuchungstag(HDWUtils.convertStringToTimestamp(row[1])); // Buchungstag
-					sLTS.setBuchungstext(row[3]); // Buchungstext
-					sLTS.setBic(row[13]); // BIC (SWIFT-Code)
-					sLTS.setBetrag(Double.parseDouble(row[14].replace(",","."))); // Betrag
-					sLTS.setWaehrung(row[15]); // Waehrung
+//					sltsch.setBuchungstag(HDWUtils.convertStringToTimestamp(row[1])); // Buchungstag
+//					sltsch.setBuchungstext(row[3]); // Buchungstext
+//					sltsch.setBic(row[13]); // BIC (SWIFT-Code)
+//					sltsch.setBetrag(Double.parseDouble(row[14].replace(",","."))); // Betrag
+//					sltsch.setWaehrung(row[15]); // Waehrung
 					
-					if(sLTS.getSpender() != null) {
-						sLTS.getSpender().setName(row[11]); // Beguenstigter/Zahlungspflichtiger
-						sLTS.getSpender().setSpenderIban(convertIbanToLong(row[12])); // Kontonummer/IBAN
+					spenden = setzeSpenden(row, spenden);
+					
+					if(spenden.getSpender() != null) {
+						spenden.getSpender().setName(row[11]); // Beguenstigter/Zahlungspflichtiger
+						spenden.getSpender().setSpenderIban(UUID.fromString(row[12])); // Kontonummer/IBAN
 					}
 					
-					sLTSList.add(sLTS);
+					spendenList.add(spenden);
 							
 				}
 				else if(row[14] != null && HDWUtils.isNegative(Double.parseDouble(row[14].replace(",","."))))
 				{
-					Kosten kst = new Kosten();
+					Kosten kosten = new Kosten();
 					//KostenType
 					if(row[11] != null && row[11].equals(HDWConstants.MIETE))
-						kst.setKostenType("Miete");
+						kosten.setKostenType("Miete");
 					
 					else if(row[11] != null && row[11].contains(HDWConstants.TELEFONINTERNET))
-						kst.setKostenType("Telefon und Internet");
+						kosten.setKostenType("Telefon und Internet");
 					
 					else if(row[3] != null && row[3].equals(HDWConstants.ENTGELTABSCHLUSS))
-						kst.setKostenType("Entgeltabschluss");
+						kosten.setKostenType("Entgeltabschluss");
 					
-					kst.setBuchungstag(HDWUtils.convertStringToTimestamp(row[1])); // Buchungstag
-					kst.setBuchungstext(row[3]); // Buchungstext
-					kst.setVerwendungszweck(row[4]); // Verwendungszweck
-					kst.setBic(row[13]); // BIC (SWIFT-Code)
-					kst.setBetrag(Double.parseDouble(row[14].replace(",","."))); // Betrag
-					kst.setWaehrung(row[15]); // Waehrung
+//					kst.setBuchungstag(HDWUtils.convertStringToTimestamp(row[1])); // Buchungstag
+//					kst.setBuchungstext(row[3]); // Buchungstext
+//					kst.setVerwendungszweck(row[4]); // Verwendungszweck
+//					kst.setBic(row[13]); // BIC (SWIFT-Code)
+//					kst.setBetrag(Double.parseDouble(row[14].replace(",","."))); // Betrag
+//					kst.setWaehrung(row[15]); // Waehrung
 					
-					if(kst.getSpender() != null) {
-						kst.getSpender().setName(row[11]); // Beguenstigter/Zahlungspflichtiger
-						kst.getSpender().setSpenderIban(convertIbanToLong(row[12])); // Kontonummer/IBAN
+					kosten = (Kosten) setzeSpenden(row, kosten);
+					
+					if(kosten.getSpender() != null) {
+						kosten.getSpender().setName(row[11]); // Beguenstigter/Zahlungspflichtiger
+						kosten.getSpender().setSpenderIban(UUID.fromString(row[12])); // Kontonummer/IBAN
 					}
 					
-					kstList.add(kst);
+					spendenList.add(kosten);
 				}
 				
 				else
 				{
-					Spender spd= new Spender();
+					Spender spender= new Spender();
 					
 					Set<String> ibanSet = new HashSet<>();
 					
 					if(!ibanSet.contains(row[12])) {
 						Spenden spenden = new Spenden();
 						
-						spenden.setBuchungstag(HDWUtils.convertStringToTimestamp(row[1])); // Buchungstag
-						spenden.setBuchungstext(row[3]); // Buchungstext
-						spenden.setVerwendungszweck(row[4]); // Verwendungszweck
-						spd.setName(row[11]); // Beguenstigter/Zahlungspflichtiger
-						spd.setSpenderIban(convertIbanToLong(row[12])); // Kontonummer/IBAN
-						spenden.setBic(row[13]); // BIC (SWIFT-Code)
-						spenden.setBetrag(Double.parseDouble(row[14].replace(",","."))); // Betrag
-						spenden.setWaehrung(row[15]); // Waehrung
+//						spenden.setBuchungstag(HDWUtils.convertStringToTimestamp(row[1])); // Buchungstag
+//						spenden.setBuchungstext(row[3]); // Buchungstext
+//						spenden.setVerwendungszweck(row[4]); // Verwendungszweck
+//						spenden.setBic(row[13]); // BIC (SWIFT-Code)
+//						spenden.setBetrag(Double.parseDouble(row[14].replace(",","."))); // Betrag
+//						spenden.setWaehrung(row[15]); // Waehrung
 						
-						spd.getSpendenList().add(spenden);
+						spenden =setzeSpenden(row, spenden);
+						
+						spender.setName(row[11]); // Beguenstigter/Zahlungspflichtiger
+						spender.setSpenderIban(UUID.fromString(row[12])); // Kontonummer/IBAN
+						
+						spender.getSpendenList().add(spenden);
 					}
 					else {
-						for(Spender spender : spdList) {
-							if(row[12].equals(spender.getSpenderIban())) {
+						for(Spender spd : spdList) {
+							if(row[12].equals(spd.getSpenderIban())) {
 								Spenden spenden = new Spenden();
 								
-								spenden.setBuchungstag(HDWUtils.convertStringToTimestamp(row[1])); // Buchungstag
-								spenden.setBuchungstext(row[3]); // Buchungstext
-								spenden.setVerwendungszweck(row[4]); // Verwendungszweck
+//								spenden.setBuchungstag(HDWUtils.convertStringToTimestamp(row[1])); // Buchungstag
+//								spenden.setBuchungstext(row[3]); // Buchungstext
+//								spenden.setVerwendungszweck(row[4]); // Verwendungszweck
+//								spenden.setBic(row[13]); // BIC (SWIFT-Code)
+//								spenden.setBetrag(Double.parseDouble(row[14].replace(",","."))); // Betrag
+//								spenden.setWaehrung(row[15]); // Waehrung
+								
+								spenden = setzeSpenden(row, spenden);
+								
 								spd.setName(row[11]); // Beguenstigter/Zahlungspflichtiger
-								spd.setSpenderIban(convertIbanToLong(row[12])); // Kontonummer/IBAN
-								spenden.setBic(row[13]); // BIC (SWIFT-Code)
-								spenden.setBetrag(Double.parseDouble(row[14].replace(",","."))); // Betrag
-								spenden.setWaehrung(row[15]); // Waehrung
+								spd.setSpenderIban(UUID.fromString(row[12])); // Kontonummer/IBAN
 								
 								spd.getSpendenList().add(spenden);
 							}
@@ -147,15 +160,14 @@ public class FileUploadService {
 					}
 					
 					ibanSet.add(row[12]);
-					spdList.add(spd);
+					spdList.add(spender);
 				}
 			}
 			
 			spenderDAO.saveAllSpender(spdList);
-			kostenDAO.saveAllKosten(kstList);
-			spenderSammelLastSchriftDAO.saveAllSpenderSammelLastSchrift(sLTSList);
-		}
-		return null;
+//			kostenDAO.saveAllKosten(kstList);
+//			spenderSammelLastSchriftDAO.saveAllSpenderSammelLastSchrift(sLTSList);
+		}return null;
 
 	}
 
@@ -166,13 +178,27 @@ public class FileUploadService {
 		fos.close();
 		return convFile;
 	}
-	
+
 	private Long convertIbanToLong(String iban) {
 		String subIban = iban != null ? iban.substring(2) : null;
-		
-		return subIban != null ? Long.parseLong(subIban) : new Long(0); 
+
+		return subIban != null ? Long.parseLong(subIban) : new Long(0);
 	}
-	
+
+	private Spenden setzeSpenden(String[] row, Spenden spenden) {
+		
+		spenden.setBuchungstag(HDWUtils.convertStringToTimestamp(row[1])); // Buchungstag
+		spenden.setBuchungstext(row[3]); // Buchungstext
+		spenden.setVerwendungszweck(row[4]); // Verwendungszweck
+		spenden.setBic(row[13]); // BIC (SWIFT-Code)
+		spenden.setBetrag(Double.parseDouble(row[14].replace(",","."))); // Betrag
+		spenden.setWaehrung(row[15]); // Waehrung
+		
+		spenden.setSpendenMonat(HDWUtils.getMonat(spenden.getBuchungstag()));
+		spenden.setSpendenJahr(HDWUtils.getJahr(spenden.getBuchungstag()));
+		
+		return spenden;
+	}
 
 //	@SuppressWarnings("resource")
 //	public void parseFullCSVExample(MultipartFile multipartFile) throws Exception {

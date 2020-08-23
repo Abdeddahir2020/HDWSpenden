@@ -1,12 +1,11 @@
 package de.hdw.model;
 
 import java.util.List;
+import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
@@ -18,9 +17,9 @@ import javax.persistence.Table;
 public class Spender {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "spender_iban", nullable = false)
-	private Long spenderIban;
+//	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "spender_iban", nullable = false, columnDefinition = "BINARY(16)")
+    private UUID spenderIban;
 	
 	@Column(name = "name")
 	private String name;
@@ -45,11 +44,11 @@ public class Spender {
 		this.name = name;
 	}
 
-	public Long getSpenderIban() {
+	public UUID getSpenderIban() {
 		return spenderIban;
 	}
 
-	public void setSpenderIban(long spenderIban) {
+	public void setSpenderIban(UUID spenderIban) {
 		this.spenderIban = spenderIban;
 	}
 

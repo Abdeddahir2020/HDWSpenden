@@ -1,6 +1,7 @@
 package de.hdw.Controller;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -38,10 +39,24 @@ public class SpenderController {
 		return new ResponseEntity<Spender>(entity, new HttpHeaders(), HttpStatus.OK);
 	}
 
+//	@PostMapping
+//	public ResponseEntity<Spender> createOrUpdateSpender(Spender spedner) throws RecordNotFoundException {
+//		Spender updated = service.createOrUpdateSpender(spedner);
+//		return new ResponseEntity<Spender>(updated, new HttpHeaders(), HttpStatus.OK);
+//	}
+	
+	@GetMapping("/{iban}")
+    public ResponseEntity<Spender> getSpenderById(@PathVariable("id") UUID iban) { 
+		Spender entity = service.findById(iban);
+
+		return new ResponseEntity<Spender>(entity, new HttpHeaders(), HttpStatus.OK);
+    }
+	
 	@PostMapping
-	public ResponseEntity<Spender> createOrUpdateSpender(Spender spedner) throws RecordNotFoundException {
-		Spender updated = service.createOrUpdateSpender(spedner);
-		return new ResponseEntity<Spender>(updated, new HttpHeaders(), HttpStatus.OK);
+	public ResponseEntity<Spender> createSpender(Spender spedner) throws RecordNotFoundException {
+		service.createSpender(spedner);
+//		return new ResponseEntity<Spender>(updated, new HttpHeaders(), HttpStatus.OK);
+		return new ResponseEntity<>(spedner, HttpStatus.CREATED);
 	}
 
 	@DeleteMapping("/{iban}")
