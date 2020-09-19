@@ -38,20 +38,21 @@ public class SpendenService {
 	}
 
 	public Spenden createOrUpdateSpender(Spenden entity) throws RecordNotFoundException {
-		Optional<Spenden> kosten = spendenDAO.findById(entity.getSpendenId());
-
-		if (kosten.isPresent()) {
-			Spenden newEntity = kosten.get();
-			newEntity.getSpender().setName(entity.getSpender().getName());
-
-			newEntity = spendenDAO.save(newEntity);
-
-			return newEntity;
-		} else {
-			entity = spendenDAO.save(entity);
-
-			return entity;
-		}
+//		Optional<Spenden> kosten = spendenDAO.findById(entity.getSpendenId());
+//
+//		if (kosten.isPresent()) {
+//			Spenden newEntity = kosten.get();
+//			newEntity.getSpender().setName(entity.getSpender().getName());
+//
+//			newEntity = spendenDAO.save(newEntity);
+//
+//			return newEntity;
+//		} else {
+//			entity = spendenDAO.save(entity);
+//
+//			return entity;
+//		}
+		return null;
 	}
 
 	public void saveSpenden(Spenden entity) throws RecordNotFoundException {

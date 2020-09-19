@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,11 +18,12 @@ import com.opencsv.CSVReader;
 
 import de.hdw.constants.HDWConstants;
 import de.hdw.dao.KostenDAO;
-import de.hdw.dao.SpenderDAO;
 import de.hdw.dao.SammelLastSchriftDAO;
+import de.hdw.dao.SpendenDAO;
+import de.hdw.dao.SpenderDAO;
 import de.hdw.model.Kosten;
-import de.hdw.model.Spenden;
 import de.hdw.model.SammelLastSchrift;
+import de.hdw.model.Spenden;
 import de.hdw.model.Spender;
 import de.hdw.utils.HDWUtils;
 
@@ -34,12 +34,15 @@ public class FileUploadService {
 	SpenderDAO spenderDAO;
 
 	@Autowired
+	SpendenDAO spendenDAO;
+
+	@Autowired
 	SammelLastSchriftDAO spenderSammelLastSchriftDAO;
 
 	@Autowired
 	KostenDAO kostenDAO;
 
-	public List<Spender> uploadFile(MultipartFile multipartFile)
+	public List<Spender> uploadFileOLD(MultipartFile multipartFile)
 			throws IOException, NumberFormatException, ParseException {
 
 		File file = convertMultiPartToFile(multipartFile);
@@ -49,125 +52,59 @@ public class FileUploadService {
 		try (@SuppressWarnings("deprecation")
 		CSVReader reader = new CSVReader(new FileReader(file), ';', '"', 1)) {
 			
-
-			// read line by line
-
-			List<Spender> spdList = new ArrayList<>();
-//			List<Kosten> kstList = new ArrayList<>();
-//			List<SammelLastSchrift> sLTSList = new ArrayList<>();
-			
-			List<Spenden> spendenList = new ArrayList<>();
-
 			// Read all rows at once
 			List<String[]> allRows = reader.readAll();
 
+			List<Spender> spdList = new ArrayList<>();
+			List<Spenden> spendenList = new ArrayList<>();
+			List<Kosten> kstList = new ArrayList<>();
+			List<SammelLastSchrift> sLTSList = new ArrayList<>();
+			Set<String> ibanSet = new HashSet<>();
+
 			// Read CSV line by line and use the string array as you want
 			for (String[] row : allRows) {
-				
-				if(row[3] != null && row[3].contains("SAMMEL-LS-EINZUG"))
-				{
-					Spenden spenden = new SammelLastSchrift();
+				Spender spender= new Spender();
+				//Neuer IBAN
+				if(!ibanSet.contains(row[12])) {
+					spender.setName(row[11]); // Beguenstigter/Zahlungspflichtiger
+					spender.setSpenderIban(row[12]); // Kontonummer/IBAN
 					
-//					sltsch.setBuchungstag(HDWUtils.convertStringToTimestamp(row[1])); // Buchungstag
-//					sltsch.setBuchungstext(row[3]); // Buchungstext
-//					sltsch.setBic(row[13]); // BIC (SWIFT-Code)
-//					sltsch.setBetrag(Double.parseDouble(row[14].replace(",","."))); // Betrag
-//					sltsch.setWaehrung(row[15]); // Waehrung
+					Spenden spenden = new Spenden();
+					spenden.setSpender(spender);
+					spenden =setzeSpenden(row, spenden);
 					
-					spenden = setzeSpenden(row, spenden);
-					
-					if(spenden.getSpender() != null) {
-						spenden.getSpender().setName(row[11]); // Beguenstigter/Zahlungspflichtiger
-						spenden.getSpender().setSpenderIban(UUID.fromString(row[12])); // Kontonummer/IBAN
-					}
-					
-					spendenList.add(spenden);
+					if (spender.getSpendenList() == null) spender.setSpendenList(new ArrayList<>());
+					spender.getSpendenList().add(spenden);
+				}
+				//Die SpendenList ergängen
+				else if(!spdList.isEmpty()){
+					for(Spender spd : spdList) {
+						if(row[12].equals(spd.getSpenderIban())) {
+							Spenden spenden = new Spenden();
+							//spenden.setSpendenId(spd.getSpenderIban());
+							spenden.setSpender(spd);
+							spenden = setzeSpenden(row, spenden);
 							
-				}
-				else if(row[14] != null && HDWUtils.isNegative(Double.parseDouble(row[14].replace(",","."))))
-				{
-					Kosten kosten = new Kosten();
-					//KostenType
-					if(row[11] != null && row[11].equals(HDWConstants.MIETE))
-						kosten.setKostenType("Miete");
-					
-					else if(row[11] != null && row[11].contains(HDWConstants.TELEFONINTERNET))
-						kosten.setKostenType("Telefon und Internet");
-					
-					else if(row[3] != null && row[3].equals(HDWConstants.ENTGELTABSCHLUSS))
-						kosten.setKostenType("Entgeltabschluss");
-					
-//					kst.setBuchungstag(HDWUtils.convertStringToTimestamp(row[1])); // Buchungstag
-//					kst.setBuchungstext(row[3]); // Buchungstext
-//					kst.setVerwendungszweck(row[4]); // Verwendungszweck
-//					kst.setBic(row[13]); // BIC (SWIFT-Code)
-//					kst.setBetrag(Double.parseDouble(row[14].replace(",","."))); // Betrag
-//					kst.setWaehrung(row[15]); // Waehrung
-					
-					kosten = (Kosten) setzeSpenden(row, kosten);
-					
-					if(kosten.getSpender() != null) {
-						kosten.getSpender().setName(row[11]); // Beguenstigter/Zahlungspflichtiger
-						kosten.getSpender().setSpenderIban(UUID.fromString(row[12])); // Kontonummer/IBAN
-					}
-					
-					spendenList.add(kosten);
-				}
-				
-				else
-				{
-					Spender spender= new Spender();
-					
-					Set<String> ibanSet = new HashSet<>();
-					
-					if(!ibanSet.contains(row[12])) {
-						Spenden spenden = new Spenden();
-						
-//						spenden.setBuchungstag(HDWUtils.convertStringToTimestamp(row[1])); // Buchungstag
-//						spenden.setBuchungstext(row[3]); // Buchungstext
-//						spenden.setVerwendungszweck(row[4]); // Verwendungszweck
-//						spenden.setBic(row[13]); // BIC (SWIFT-Code)
-//						spenden.setBetrag(Double.parseDouble(row[14].replace(",","."))); // Betrag
-//						spenden.setWaehrung(row[15]); // Waehrung
-						
-						spenden =setzeSpenden(row, spenden);
-						
-						spender.setName(row[11]); // Beguenstigter/Zahlungspflichtiger
-						spender.setSpenderIban(UUID.fromString(row[12])); // Kontonummer/IBAN
-						
-						spender.getSpendenList().add(spenden);
-					}
-					else {
-						for(Spender spd : spdList) {
-							if(row[12].equals(spd.getSpenderIban())) {
-								Spenden spenden = new Spenden();
-								
-//								spenden.setBuchungstag(HDWUtils.convertStringToTimestamp(row[1])); // Buchungstag
-//								spenden.setBuchungstext(row[3]); // Buchungstext
-//								spenden.setVerwendungszweck(row[4]); // Verwendungszweck
-//								spenden.setBic(row[13]); // BIC (SWIFT-Code)
-//								spenden.setBetrag(Double.parseDouble(row[14].replace(",","."))); // Betrag
-//								spenden.setWaehrung(row[15]); // Waehrung
-								
-								spenden = setzeSpenden(row, spenden);
-								
-								spd.setName(row[11]); // Beguenstigter/Zahlungspflichtiger
-								spd.setSpenderIban(UUID.fromString(row[12])); // Kontonummer/IBAN
-								
-								spd.getSpendenList().add(spenden);
-							}
+//							spd.setName(row[11]); // Beguenstigter/Zahlungspflichtiger
+//							spd.setSpenderIban(row[12]); // Kontonummer/IBAN
+							
+							if (spd.getSpendenList() == null) spd.setSpendenList(new ArrayList<>());
+							spd.getSpendenList().add(spenden);
 						}
 					}
-					
-					ibanSet.add(row[12]);
-					spdList.add(spender);
 				}
-			}
-			
+				
+			ibanSet.add(row[12]);
+			spdList.add(spender);
+			spendenList.addAll(spender.getSpendenList());
+		}
+		
 			spenderDAO.saveAllSpender(spdList);
-//			kostenDAO.saveAllKosten(kstList);
-//			spenderSammelLastSchriftDAO.saveAllSpenderSammelLastSchrift(sLTSList);
-		}return null;
+			spendenDAO.saveAllSpenden(spendenList);
+			kostenDAO.saveAllKosten(kstList);
+			spenderSammelLastSchriftDAO.saveAllSpenderSammelLastSchrift(sLTSList);
+		}
+		return null;
 
 	}
 
@@ -179,11 +116,11 @@ public class FileUploadService {
 		return convFile;
 	}
 
-	private Long convertIbanToLong(String iban) {
-		String subIban = iban != null ? iban.substring(2) : null;
-
-		return subIban != null ? Long.parseLong(subIban) : new Long(0);
-	}
+//	private Long convertIbanToLong(String iban) {
+//		String subIban = iban != null ? iban.substring(2) : null;
+//
+//		return subIban != null ? Long.parseLong(subIban) : new Long(0);
+//	}
 
 	private Spenden setzeSpenden(String[] row, Spenden spenden) {
 		
@@ -193,35 +130,99 @@ public class FileUploadService {
 		spenden.setBic(row[13]); // BIC (SWIFT-Code)
 		spenden.setBetrag(Double.parseDouble(row[14].replace(",","."))); // Betrag
 		spenden.setWaehrung(row[15]); // Waehrung
-		
 		spenden.setSpendenMonat(HDWUtils.getMonat(spenden.getBuchungstag()));
 		spenden.setSpendenJahr(HDWUtils.getJahr(spenden.getBuchungstag()));
 		
 		return spenden;
 	}
 
-//	@SuppressWarnings("resource")
-//	public void parseFullCSVExample(MultipartFile multipartFile) throws Exception {
-//		File file = convertMultiPartToFile(multipartFile);
-//
-//		// Build reader instance
-//		@SuppressWarnings("deprecation")
-//		CSVReader reader = new CSVReader(new FileReader(file), ';', '"', 1);
-//
-//		// Read all rows at once
-//		List<String[]> allRows = reader.readAll();
-//
-//		// Read CSV line by line and use the string array as you want
-//		for (String[] row : allRows) {
-//			System.out.println(row[1]); // Buchungstag
-//			System.out.println(row[3]); // Buchungstext
-//			System.out.println(row[4]); // Verwendungszweck
-//			System.out.println(row[11]); // Beguenstigter/Zahlungspflichtiger
-//			System.out.println(row[12]); // Kontonummer/IBAN
-//			System.out.println(row[13]); // BIC (SWIFT-Code)
-//			System.out.println(row[14]); // Betrag
-//			System.out.println(row[15]); // Waehrung
-//			System.out.println(row[16]); // Info
-//		}
-//	}
+	public List<Spender> uploadFile(MultipartFile multipartFile)
+			throws IOException, NumberFormatException, ParseException {
+
+		File file = convertMultiPartToFile(multipartFile);
+
+		// parse CSV file to create a list of `User` objects
+		
+		try (@SuppressWarnings("deprecation")
+		CSVReader reader = new CSVReader(new FileReader(file), ';', '"', 1)) {
+			
+			// Read all rows at once
+			List<String[]> allRows = reader.readAll();
+
+			List<Spender> spenderList = new ArrayList<>();
+			List<Spenden> spendenList = new ArrayList<>();
+			List<Kosten> kstList = new ArrayList<>();
+			List<SammelLastSchrift> spdSLSTList = new ArrayList<>();
+			Set<String> ibanSet = new HashSet<>();
+
+			// Read CSV line by line
+			for (String[] row : allRows) {
+				
+				if(row[3] != null && row[3].contains("SAMMEL-LS-EINZUG")){
+					Spenden spenden = new SammelLastSchrift();
+					spenden = setzeSpenden(row, spenden);
+					spdSLSTList.add((SammelLastSchrift) spenden);
+				}
+				else if(row[14] != null && HDWUtils.isNegative(Double.parseDouble(row[14].replace(",",".")))){
+					Kosten kosten = new Kosten();
+					//KostenType
+					if(row[11] != null && row[11].equals(HDWConstants.MIETE))
+						kosten.setKostenType("Miete");
+					
+					else if(row[11] != null && row[11].contains(HDWConstants.TELEFONINTERNET))
+						kosten.setKostenType("Telefon und Internet");
+					
+					else if(row[3] != null && row[3].equals(HDWConstants.ENTGELTABSCHLUSS))
+						kosten.setKostenType("Entgeltabschluss");
+					
+					kosten = (Kosten) setzeSpenden(row, kosten);
+					kosten.setName(row[11]); // Beguenstigter/Zahlungspflichtiger
+					kosten.setKostenIban(row[12]); // Kontonummer/IBAN
+					
+					kstList.add(kosten);
+				}
+				else{
+					//Neuer IBAN
+					if(!ibanSet.contains(row[12])) {
+						Spender spender= new Spender();
+						Spenden spenden = new Spenden();
+						spenden =setzeSpenden(row, spenden);
+						spender.setName(row[11]); // Beguenstigter/Zahlungspflichtiger
+						spender.setSpenderIban(row[12]); // Kontonummer/IBAN
+						
+						if (spender.getSpendenList() == null) spender.setSpendenList(new ArrayList<>());
+						spender.getSpendenList().add(spenden);
+						
+						spenderList.add(spender);
+						spendenList.add(spenden);
+					}
+					//Die SpendenList ergänzen
+					else if(!spenderList.isEmpty()){
+						for(Spender spd : spenderList) {
+							if(row[12].equals(spd.getSpenderIban())) {
+								Spenden spenden = new Spenden();
+								spenden.setSpender(spd);
+								spenden = setzeSpenden(row, spenden);
+								
+								if (spd.getSpendenList() == null) spd.setSpendenList(new ArrayList<>());
+								spd.getSpendenList().add(spenden);
+								
+								spendenList.add(spenden);
+							}
+						}
+					}
+//					spenderList.add(spender);
+//					spendenList.addAll(spender.getSpendenList());
+				}
+				ibanSet.add(row[12]);
+			}
+			
+			spenderDAO.saveAllSpender(spenderList);
+			spendenDAO.saveAllSpenden(spendenList);
+			kostenDAO.saveAllKosten(kstList);
+			spenderSammelLastSchriftDAO.saveAllSpenderSammelLastSchrift(spdSLSTList);
+		}
+		return null;
+
+	}
 }

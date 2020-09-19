@@ -1,11 +1,9 @@
 package de.hdw.model;
 
 import java.util.List;
-import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
@@ -13,13 +11,12 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "SPENDER")
+@Table(name = "spender")
 public class Spender {
 
 	@Id
-//	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "spender_iban", nullable = false, columnDefinition = "BINARY(16)")
-    private UUID spenderIban;
+	@Column(name = "spender_iban" ,unique = true, nullable = false, columnDefinition = "VARCHAR(22)")
+    private String spenderIban;
 	
 	@Column(name = "name")
 	private String name;
@@ -28,12 +25,17 @@ public class Spender {
 	@JoinColumn(name="adresse_Id", insertable=false , updatable=false)
 	private Adresse adresse;
 
-	@OneToMany(fetch = FetchType.LAZY, mappedBy = "spender")
+	@OneToMany(mappedBy = "spender")
 	private List<Spenden> spendenList;
-	
 	
 	public Spender() {
 		super();
+	}
+	
+	public Spender(String name, String spenderIban) {
+		super();
+		this.name = name;
+		this.spenderIban = spenderIban;
 	}
 
 	public String getName() {
@@ -44,11 +46,11 @@ public class Spender {
 		this.name = name;
 	}
 
-	public UUID getSpenderIban() {
+	public String getSpenderIban() {
 		return spenderIban;
 	}
 
-	public void setSpenderIban(UUID spenderIban) {
+	public void setSpenderIban(String spenderIban) {
 		this.spenderIban = spenderIban;
 	}
 

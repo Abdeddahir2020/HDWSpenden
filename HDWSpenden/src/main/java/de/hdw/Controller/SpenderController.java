@@ -25,19 +25,19 @@ public class SpenderController {
 	@Autowired
 	SpenderService service;
 
-	@GetMapping
+	@GetMapping("/{allSpender}")
 	public ResponseEntity<List<Spender>> getAllSpender() {
 		List<Spender> list = service.getAllSpender();
 
 		return new ResponseEntity<List<Spender>>(list, new HttpHeaders(), HttpStatus.OK);
 	}
 
-	@GetMapping("/{iban}")
-	public ResponseEntity<Spender> getSpenderById(@PathVariable("iban") Long iban) throws RecordNotFoundException {
-		Spender entity = service.getSpenderByIban(iban);
-
-		return new ResponseEntity<Spender>(entity, new HttpHeaders(), HttpStatus.OK);
-	}
+//	@GetMapping("/{iban}")
+//	public ResponseEntity<Spender> getSpenderById(@PathVariable("iban") Long iban) throws RecordNotFoundException {
+//		Spender entity = service.getSpenderByIban(iban);
+//
+//		return new ResponseEntity<Spender>(entity, new HttpHeaders(), HttpStatus.OK);
+//	}
 
 //	@PostMapping
 //	public ResponseEntity<Spender> createOrUpdateSpender(Spender spedner) throws RecordNotFoundException {
@@ -45,21 +45,21 @@ public class SpenderController {
 //		return new ResponseEntity<Spender>(updated, new HttpHeaders(), HttpStatus.OK);
 //	}
 	
-	@GetMapping("/{iban}")
-    public ResponseEntity<Spender> getSpenderById(@PathVariable("id") UUID iban) { 
+	@GetMapping("/{spenderByIban}")
+    public ResponseEntity<Spender> getSpenderByIban(@PathVariable("id") UUID iban) { 
 		Spender entity = service.findById(iban);
 
 		return new ResponseEntity<Spender>(entity, new HttpHeaders(), HttpStatus.OK);
     }
 	
-	@PostMapping
+	@PostMapping("/{createSpender}")
 	public ResponseEntity<Spender> createSpender(Spender spedner) throws RecordNotFoundException {
 		service.createSpender(spedner);
 //		return new ResponseEntity<Spender>(updated, new HttpHeaders(), HttpStatus.OK);
 		return new ResponseEntity<>(spedner, HttpStatus.CREATED);
 	}
 
-	@DeleteMapping("/{iban}")
+	@DeleteMapping("/{deleteSpender}")
 	public HttpStatus deleteSpenderById(@PathVariable("iban") Long iban) throws RecordNotFoundException {
 		service.deleteSpenderByIban(iban);
 		return HttpStatus.FORBIDDEN;

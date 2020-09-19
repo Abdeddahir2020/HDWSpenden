@@ -23,7 +23,7 @@ public class SpendenDAO {
 		return repository.findAll();
 	}
 
-	public void saveAllKosten(List<Spenden> entities) {
+	public void saveAllSpenden(List<Spenden> entities) {
 		repository.saveAll(entities);
 	}
 

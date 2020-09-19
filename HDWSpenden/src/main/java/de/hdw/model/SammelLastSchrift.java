@@ -7,15 +7,19 @@ import javax.persistence.DiscriminatorColumn;
 import javax.persistence.DiscriminatorType;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 @Entity
+@Table(name = "sammelLastSchrift")
 @DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
 @DiscriminatorValue(value="SMLLSTSCH")
 public class SammelLastSchrift extends Spenden{
-
-
+	
 	@Column(name = "sammel_gruppen_name")
 	private String sammelGruppenName;
 	
@@ -30,7 +34,7 @@ public class SammelLastSchrift extends Spenden{
 	public SammelLastSchrift() {
 		super();
 	}
-
+	
 	public String getSammelGruppenName() {
 		return sammelGruppenName;
 	}
@@ -54,6 +58,5 @@ public class SammelLastSchrift extends Spenden{
 	public void setMandatsDatum(Date mandatsDatum) {
 		this.mandatsDatum = mandatsDatum;
 	}
-
 
 }

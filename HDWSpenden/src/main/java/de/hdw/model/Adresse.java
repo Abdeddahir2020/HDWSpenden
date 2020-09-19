@@ -12,7 +12,7 @@ import javax.persistence.PrimaryKeyJoinColumn;
 public class Adresse {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Column(name = "adresse_Id", nullable = false)
 	private Long adresseId;
 

@@ -39,20 +39,21 @@ public class SammelLastSchriftService {
 	}
 
 	public SammelLastSchrift createOrUpdateSpender(SammelLastSchrift entity) throws RecordNotFoundException {
-		Optional<SammelLastSchrift> spenderSammelLastSchrift = spenderSammelLastSchriftDAO.findById(entity.getSpendenId());
-
-		if (spenderSammelLastSchrift.isPresent()) {
-			SammelLastSchrift newEntity = spenderSammelLastSchrift.get();
-			newEntity.getSpender().setName(entity.getSpender().getName());
-
-			newEntity = spenderSammelLastSchriftDAO.save(newEntity);
-
-			return newEntity;
-		} else {
-			entity = spenderSammelLastSchriftDAO.save(entity);
-
-			return entity;
-		}
+//		Optional<SammelLastSchrift> spenderSammelLastSchrift = spenderSammelLastSchriftDAO.findById(entity.getSpendenId());
+//
+//		if (spenderSammelLastSchrift.isPresent()) {
+//			SammelLastSchrift newEntity = spenderSammelLastSchrift.get();
+//			newEntity.getSpender().setName(entity.getSpender().getName());
+//
+//			newEntity = spenderSammelLastSchriftDAO.save(newEntity);
+//
+//			return newEntity;
+//		} else {
+//			entity = spenderSammelLastSchriftDAO.save(entity);
+//
+//			return entity;
+//		}
+		return null;
 	}
 
 	public void saveSpender(SammelLastSchrift entity) throws RecordNotFoundException {

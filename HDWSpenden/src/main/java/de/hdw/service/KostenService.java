@@ -38,20 +38,21 @@ public class KostenService {
 	}
 
 	public Kosten createOrUpdateSpender(Kosten entity) throws RecordNotFoundException {
-		Optional<Kosten> kosten = kostenDAO.findById(entity.getSpendenId());
-
-		if (kosten.isPresent()) {
-			Kosten newEntity = kosten.get();
-			newEntity.getSpender().setName(entity.getSpender().getName());
-
-			newEntity = kostenDAO.save(newEntity);
-
-			return newEntity;
-		} else {
-			entity = kostenDAO.save(entity);
-
-			return entity;
-		}
+//		Optional<Kosten> kosten = kostenDAO.findById(entity.getSpendenId());
+//
+//		if (kosten.isPresent()) {
+//			Kosten newEntity = kosten.get();
+//			newEntity.getSpender().setName(entity.getSpender().getName());
+//
+//			newEntity = kostenDAO.save(newEntity);
+//
+//			return newEntity;
+//		} else {
+//			entity = kostenDAO.save(entity);
+//
+//			return entity;
+//		}
+		return null;
 	}
 
 	public void saveKosten(Kosten entity) throws RecordNotFoundException {
