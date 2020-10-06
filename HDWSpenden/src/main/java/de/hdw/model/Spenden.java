@@ -7,6 +7,7 @@ import javax.persistence.DiscriminatorColumn;
 import javax.persistence.DiscriminatorType;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -20,9 +21,9 @@ import javax.persistence.TemporalType;
 
 @Entity
 @Table(name = "spenden")
-@Inheritance(strategy=InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name="type",discriminatorType=DiscriminatorType.STRING)
-@DiscriminatorValue(value="spenden")
+//@Inheritance(strategy=InheritanceType.SINGLE_TABLE)
+//@DiscriminatorColumn(name="type",discriminatorType=DiscriminatorType.STRING)
+//@DiscriminatorValue(value="spenden")
 public class Spenden{
 
 
@@ -31,7 +32,7 @@ public class Spenden{
 	@Column(name = "spenden_id", nullable = false)
 	private Long spendenId;
 	
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="spender_iban", nullable = false)
     private Spender spender;
 	
@@ -147,6 +148,9 @@ public class Spenden{
 
 	@Override
 	public String toString() {
-		return "";
+		return "Spenden [spendenId=" + spendenId + ", spenderIban=" + spender.getSpenderIban() + ", spenderName=" + spender.getName()
+				+ ", betrag=" + betrag + ", spendenMonat=" + spendenMonat + ", spendenJahr=" + spendenJahr + "]";
 	}
+
+	
 }

@@ -2,6 +2,7 @@ package de.hdw.model;
 
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -25,8 +26,14 @@ public class Spender {
 	@JoinColumn(name="adresse_Id", insertable=false , updatable=false)
 	private Adresse adresse;
 
-	@OneToMany(mappedBy = "spender")
+	@OneToMany(cascade=CascadeType.ALL, mappedBy = "spender")
 	private List<Spenden> spendenList;
+	
+	@OneToMany(cascade=CascadeType.ALL, mappedBy = "spender")
+	private List<Kosten> kostenList;
+	
+	@OneToMany(cascade=CascadeType.ALL, mappedBy = "spender")
+	private List<SammelLastSchrift> sllstList;
 	
 	public Spender() {
 		super();
@@ -69,5 +76,28 @@ public class Spender {
 	public void setSpendenList(List<Spenden> spendenList) {
 		this.spendenList = spendenList;
 	}
+
+	@Override
+	public String toString() {
+		return "Spender [spenderIban=" + spenderIban + ", name=" + name + "]";
+	}
+
+	public List<Kosten> getKostenList() {
+		return kostenList;
+	}
+
+	public void setKostenList(List<Kosten> kostenList) {
+		this.kostenList = kostenList;
+	}
+
+	public List<SammelLastSchrift> getSllstList() {
+		return sllstList;
+	}
+
+	public void setSllstList(List<SammelLastSchrift> sllstList) {
+		this.sllstList = sllstList;
+	}
+	
+	
 	
 }
